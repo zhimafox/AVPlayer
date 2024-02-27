@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/icon_fullscreen.png</file>
+        <file>resources/icon_next.png</file>
+        <file>resources/icon_pause.png</file>
+        <file>resources/icon_play.png</file>
+        <file>resources/icon_previous.png</file>
+        <file>resources/icon_settings.png</file>
+        <file>resources/icon_stop.png</file>
+        <file>resources/icon_volumn.png</file>
+        <file>resources/icon_fullscreen_press.png</file>
+        <file>resources/icon_next_press.png</file>
+        <file>resources/icon_pause_press.png</file>
+        <file>resources/icon_play_press.png</file>
+        <file>resources/icon_previous_press.png</file>
+        <file>resources/icon_settings_press.png</file>
+        <file>resources/icon_stop_press.png</file>
+        <file>resources/icon_volumn_press.png</file>
+    </qresource>
+</RCC>
