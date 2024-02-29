@@ -16,5 +16,9 @@
         <file>resources/icon_settings_press.png</file>
         <file>resources/icon_stop_press.png</file>
         <file>resources/icon_volumn_press.png</file>
+        <file>resources/icon_fastforward_press.png</file>
+        <file>resources/icon_fastforward.png</file>
+        <file>resources/icon_recoil_press.png</file>
+        <file>resources/icon_recoil.png</file>
     </qresource>
 </RCC>

@@ -91,10 +91,12 @@ void FxProgressBar::mouseMoveEvent(QMouseEvent *event) {
 
 void FxProgressBar::enterEvent(QEnterEvent *event) {
     // 当鼠标进入小部件时，获取鼠标位置
+    qDebug() << __FUNCTION__ << event->isSinglePointEvent();
     emit shouldShowThumbnail();
 }
 
 void FxProgressBar::leaveEvent(QEvent *event) {
+    qDebug() << __FUNCTION__ << event->isSinglePointEvent();
     // 鼠标离开事件的处理代码
     emit shouldHideThumbnail();
 }

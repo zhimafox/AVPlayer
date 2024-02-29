@@ -1,5 +1,5 @@
-#ifndef FVPLAYERWIDGET_H
-#define FVPLAYERWIDGET_H
+#ifndef FXPLAYERWIDGET_H
+#define FXPLAYERWIDGET_H
 
 #include <QWidget>
 #include <QPushButton>
@@ -9,13 +9,23 @@
 #include <QBoxLayout>
 #include <QObject>
 #include "FxProgressBar.h"
-class FvPlayerWidget : public QWidget
+#include "mediasession/IFxPlayerSessionMgr.h"
+using namespace fox::player;
+
+class FxPlayerWidget : public QWidget, public IFxPlayerSessionMgrCallback, public std::enable_shared_from_this<FxPlayerWidget>
 {
     Q_OBJECT
 
 public:
-    FvPlayerWidget(QWidget *parent = nullptr);
-    ~FvPlayerWidget();
+    FxPlayerWidget(QWidget *parent = nullptr);
+    ~FxPlayerWidget();
+
+public: //IFxPlayerSessionMgrCallback
+    void initSessionMgr();
+
+    virtual void onPlayTimeChange(int progress, int playtime/*second*/) override;
+    virtual void onPlayStateChange(const MediaPlayState state) override;
+
 private:
     void initSubviews();
 
@@ -49,8 +59,10 @@ private:
 
     QPushButton *mPlayButton;
     QPushButton *mStopButton;
-    QPushButton *mPreviousButton;
-    QPushButton *mNextButton;
+
+    QPushButton *mRecoilButton;
+    QPushButton *mFastForwardButton;
+
     QPushButton *mFullScreenButton;
     QPushButton *mSettingsButton;
     QPushButton *mVolumnButton;
@@ -61,5 +73,7 @@ private:
 
     QTimer *mTimer;
     int mMediaDuration = 0;
+
+    std::shared_ptr<fox::player::IFxPlayerSessionMgr> mPlayerSessionMgr;
 };
-#endif // FVPLAYERWIDGET_H
+#endif // FXPLAYERWIDGET_H

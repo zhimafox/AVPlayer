@@ -1,16 +1,16 @@
-#include "FvPlayerWidget.h"
+#include "FxPlayerWidget.h"
 #include <QtWidgets>
 #include <QObject>
 #include <QEvent>
 #include <QDebug>
 
-FvPlayerWidget::FvPlayerWidget(QWidget *parent)
+FxPlayerWidget::FxPlayerWidget(QWidget *parent)
     : QWidget(parent)
 {
     initSubviews();
 }
 
-void FvPlayerWidget::initSubviews() {
+void FxPlayerWidget::initSubviews() {
 
     initWindowsStyle();
     QBoxLayout *rootLayout = createRootLayout();
@@ -23,7 +23,11 @@ void FvPlayerWidget::initSubviews() {
     createThumbnailWidget();
 }
 
-void FvPlayerWidget::initWindowsStyle() {
+void FxPlayerWidget::initSessionMgr() {
+    auto callback = std::dynamic_pointer_cast<IFxPlayerSessionMgrCallback>(shared_from_this());
+    mPlayerSessionMgr = IFxPlayerSessionMgr::createPlaySessionMgr(callback);
+}
+void FxPlayerWidget::initWindowsStyle() {
     // 设置窗口标题
     updateWindowTitle("Fox AV Player");
     // 设置主窗口的初始大小为800x600像素
@@ -33,7 +37,7 @@ void FvPlayerWidget::initWindowsStyle() {
 
 }
 
-QBoxLayout* FvPlayerWidget::createRootLayout() {
+QBoxLayout* FxPlayerWidget::createRootLayout() {
     mVideoImageWidget = new QWidget();
     QVBoxLayout *rootLayout = new QVBoxLayout(this);
     rootLayout->setContentsMargins(10, 0, 10, 0);
@@ -42,11 +46,11 @@ QBoxLayout* FvPlayerWidget::createRootLayout() {
     return rootLayout;
 }
 
-void FvPlayerWidget::createVideoWidget(QBoxLayout *parent) {
+void FxPlayerWidget::createVideoWidget(QBoxLayout *parent) {
     parent->addWidget(mVideoImageWidget);
 }
 
-void FvPlayerWidget::createThumbnailWidget()
+void FxPlayerWidget::createThumbnailWidget()
 {
     // 创建一个浮动的小部件
     mThumbnailWidget = new QWidget();
@@ -60,12 +64,12 @@ void FvPlayerWidget::createThumbnailWidget()
     mThumbnailWidget->move(0, 10000);
 }
 
-QBoxLayout* FvPlayerWidget::createCtrlBarLayout(QBoxLayout *parent)
+QBoxLayout* FxPlayerWidget::createCtrlBarLayout(QBoxLayout *parent)
 {
     return createLayoutFrame(parent, 60, "", false);
 }
 
-void FvPlayerWidget::createProgressBar(QBoxLayout *parent) {
+void FxPlayerWidget::createProgressBar(QBoxLayout *parent) {
     QBoxLayout *processBarLayout = createLayoutFrame(parent, 12, "#2A282B");
 
     // 创建 QLabel 和 QProgressBar
@@ -73,11 +77,11 @@ void FvPlayerWidget::createProgressBar(QBoxLayout *parent) {
     mProgressBar = new FxProgressBar();
 
     // 连接 CustomProgressBar 的信号
-    connect(mProgressBar, &FxProgressBar::shouldShowThumbnail, this, &FvPlayerWidget::handleShowThumbnail);
-    connect(mProgressBar, &FxProgressBar::shouldHideThumbnail, this, &FvPlayerWidget::handleHideThumbnail);
-    connect(mProgressBar, &FxProgressBar::shouldSeekProgress, this, &FvPlayerWidget::handleSeekProgress);
-    connect(mProgressBar, &FxProgressBar::shouldWatchProgress, this, &FvPlayerWidget::handleWatchProgress);
-    connect(mProgressBar, &FxProgressBar::shouldUpdateThumbnailPosition, this, &FvPlayerWidget::handleUpdateThumbnailPosition);
+    connect(mProgressBar, &FxProgressBar::shouldShowThumbnail, this, &FxPlayerWidget::handleShowThumbnail);
+    connect(mProgressBar, &FxProgressBar::shouldHideThumbnail, this, &FxPlayerWidget::handleHideThumbnail);
+    connect(mProgressBar, &FxProgressBar::shouldSeekProgress, this, &FxPlayerWidget::handleSeekProgress);
+    connect(mProgressBar, &FxProgressBar::shouldWatchProgress, this, &FxPlayerWidget::handleWatchProgress);
+    connect(mProgressBar, &FxProgressBar::shouldUpdateThumbnailPosition, this, &FxPlayerWidget::handleUpdateThumbnailPosition);
 
     mTotalTime = new QLabel("00:00:00");
 
@@ -113,7 +117,7 @@ void FvPlayerWidget::createProgressBar(QBoxLayout *parent) {
     processBarLayout->setAlignment(Qt::AlignVCenter);
 }
 
-void FvPlayerWidget::createButtonsBar(QBoxLayout *parent) {
+void FxPlayerWidget::createButtonsBar(QBoxLayout *parent) {
     QBoxLayout *buttonsBarLayout = createLayoutFrame(parent, 45, "#2A282B");
     QHBoxLayout *leftButtonsBarLayout = new QHBoxLayout();
 
@@ -147,17 +151,18 @@ void FvPlayerWidget::createButtonsBar(QBoxLayout *parent) {
     QWidget *rightSpacer = new QWidget();
     rightSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    mPlayButton = createButton("icon_play", 38, 38);
-    mPreviousButton = createButton("icon_previous");
-    mNextButton = createButton("icon_next");
-    mStopButton = createButton("icon_stop");
-    mSettingsButton = createButton("icon_settings");
+    mPlayButton = createButton("icon_play", 35, 35);
+    mRecoilButton = createButton("icon_recoil");
+    mFastForwardButton = createButton("icon_fastforward");
+    mStopButton = createButton("icon_stop", 25, 25);
+    mSettingsButton = createButton("icon_settings", 22, 22);
 
     centerButtonsBarLayout->addWidget(leftSpacer);
     centerButtonsBarLayout->addWidget(mStopButton);
-    centerButtonsBarLayout->addWidget(mPreviousButton);
+
+    centerButtonsBarLayout->addWidget(mRecoilButton);
     centerButtonsBarLayout->addWidget(mPlayButton);
-    centerButtonsBarLayout->addWidget(mNextButton);
+    centerButtonsBarLayout->addWidget(mFastForwardButton);
     centerButtonsBarLayout->addWidget(mSettingsButton);
     centerButtonsBarLayout->addWidget(rightSpacer);
 
@@ -167,16 +172,16 @@ void FvPlayerWidget::createButtonsBar(QBoxLayout *parent) {
     rightButtonsBarLayout->addWidget(mFullScreenButton);
 }
 
-void FvPlayerWidget::updateDurationLabel() {
+void FxPlayerWidget::updateDurationLabel() {
 
 }
 
-void FvPlayerWidget::updateWindowTitle(QString title){
+void FxPlayerWidget::updateWindowTitle(QString title){
     // 设置窗口标题
     setWindowTitle(title);
 }
 
-QBoxLayout* FvPlayerWidget::createLayoutFrame(QBoxLayout *parent, int height, QString colorString, bool isHorizontal) {
+QBoxLayout* FxPlayerWidget::createLayoutFrame(QBoxLayout *parent, int height, QString colorString, bool isHorizontal) {
     QFrame *frame = new QFrame();
     frame->setFixedHeight(height);
     parent->addWidget(frame);
@@ -197,7 +202,7 @@ QBoxLayout* FvPlayerWidget::createLayoutFrame(QBoxLayout *parent, int height, QS
     return layout;
 }
 
-QPushButton* FvPlayerWidget::createButton(QString iconName,  int width, int height) {
+QPushButton* FxPlayerWidget::createButton(QString iconName,  int width, int height) {
     QString normalIconPath = ":/resources/" + iconName + ".png";
     QString pressedIconPath = ":/resources/" + iconName + "_press.png";
 
@@ -239,32 +244,44 @@ QPushButton* FvPlayerWidget::createButton(QString iconName,  int width, int heig
 }
 
 //鼠标seek,需要从这个点开始播放: ratio *totalTime
-void FvPlayerWidget::handleSeekProgress(int ratio){
+void FxPlayerWidget::handleSeekProgress(int ratio){
     // qDebug() << "handleSeekProgress" << ratio;
     mProgressBar->setPlayProgress(ratio);
 
 }
 
 //鼠标mouse over,需要显示thumbnail: ratio *totalTime
-void FvPlayerWidget::handleWatchProgress(int ratio) {
+void FxPlayerWidget::handleWatchProgress(int ratio) {
     // qDebug() << "handleWatchProgress" << ratio;
     mProgressBar->setPlayProgress(ratio);
 
 }
 
-void FvPlayerWidget::handleShowThumbnail(){
+void FxPlayerWidget::handleShowThumbnail(){
     mThumbnailWidget->show();
 }
 
-void FvPlayerWidget::handleHideThumbnail(){
+void FxPlayerWidget::handleHideThumbnail(){
     mThumbnailWidget->hide();
 }
 
-void FvPlayerWidget::handleUpdateThumbnailPosition(QPointF point){
-    QPointF globalPos = mapToGlobal(point);
-    double maxX = qMax(0.0, globalPos.x());
+void FxPlayerWidget::handleUpdateThumbnailPosition(QPointF point){
+    // QPointF globalPos = mapToGlobal(point);
     double y = this->size().height() - 60 - mThumbnailWidget->height() - 10;
     mThumbnailWidget->move(point.x(), y);
 }
 
-FvPlayerWidget::~FvPlayerWidget() {}
+//#IFxPlayerSessionMgrCallback implement start
+void FxPlayerWidget::onPlayTimeChange(int progress, int playtime/*second*/)
+{
+    qDebug() << "progress:" << progress << "playtime:" << playtime;
+}
+
+void FxPlayerWidget::onPlayStateChange(const MediaPlayState state)
+{
+    qDebug() << "state:" << static_cast<int>(state);;
+}
+
+//#IFxPlayerSessionMgrCallback implement end
+
+FxPlayerWidget::~FxPlayerWidget() {}
