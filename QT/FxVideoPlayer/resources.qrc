@@ -20,6 +20,5 @@
         <file>resources/icon_fastforward.png</file>
         <file>resources/icon_recoil_press.png</file>
         <file>resources/icon_recoil.png</file>
-        <file>resources/media.mp4</file>
     </qresource>
 </RCC>

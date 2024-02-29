@@ -1,5 +1,6 @@
 #include "FxPlayerSessionMgr.h"
 #include <memory>
+#include "FxPacketQueue.h"
 
 using namespace std;
 using namespace fox::player;
@@ -15,8 +16,23 @@ std::shared_ptr<IFxPlayerSessionMgr> IFxPlayerSessionMgr::createPlaySessionMgr(I
 
 void FxPlayerSessionMgr::init(const char *url) {
     auto callback = std::dynamic_pointer_cast<IFxDemuxThreadCallback>(shared_from_this());
-    mDemuxThread = std::make_unique<FxDemuxThread>(callback);
-    mDemuxThread->open(url);
+
+    pAudioQueue = std::make_shared<FxPacketQueue>();
+    pVideoQueue = std::make_shared<FxPacketQueue>();
+    mDemuxThread = std::make_unique<FxDemuxThread>(callback, pAudioQueue, pVideoQueue);
+    int ret = mDemuxThread->open(url);
+    if (ret < 0) {
+        printf("mDemuxThread->open failed url:%s", url);
+    }
+
+    ret = mDemuxThread->start();
+    if (ret < 0) {
+        printf("mDemuxThread->start failed url:%s", url);
+    }
+
+    mDemuxThread->stop();
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 void FxPlayerSessionMgr::openMedia(const std::string& filePath) {
@@ -59,5 +75,5 @@ void FxPlayerSessionMgr::watchFrame(int progress) {
 }
 
 FxPlayerSessionMgr::~FxPlayerSessionMgr() {
-    mDemuxThread = nullptr;
+    mDemuxThread.reset();
 }

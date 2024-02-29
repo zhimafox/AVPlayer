@@ -9,11 +9,13 @@ namespace fox
 {
     namespace player
     {
+        class FxPacketQueue;
+        using FxPacketQueuePtr = std::shared_ptr<FxPacketQueue>;
         class FxPlayerSessionMgr : public IFxPlayerSessionMgr, public IFxDemuxThreadCallback
         {
         public:
             FxPlayerSessionMgr(IFxPlayerSessionMgrCallbackWeakPtr callback);
-            ~FxPlayerSessionMgr();
+            virtual ~FxPlayerSessionMgr();
 
         public:
             virtual void init(const char *url) override;
@@ -29,6 +31,9 @@ namespace fox
         private:
             std::unique_ptr<FxDemuxThread> mDemuxThread;
             IFxPlayerSessionMgrCallbackWeakPtr mCallback;
+
+            FxPacketQueuePtr pAudioQueue;
+            FxPacketQueuePtr pVideoQueue;
         };
 
     }// namespace player
