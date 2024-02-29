@@ -21,7 +21,7 @@ public:
     ~FxPlayerWidget();
 
 public: //IFxPlayerSessionMgrCallback
-    void initSessionMgr();
+    void initSessionMgr(const char *url);
 
     virtual void onPlayTimeChange(int progress, int playtime/*second*/) override;
     virtual void onPlayStateChange(const MediaPlayState state) override;

@@ -12,6 +12,7 @@ SOURCES += \
     main.cpp \
     mediasession/FxDemuxThread.cpp \
     mediasession/FxFrameQueue.cpp \
+    mediasession/FxPacketQueue.cpp \
     mediasession/FxPlayerSessionMgr.cpp \
     player/FxPlayerWidget.cpp \
     player/FxProgressBar.cpp
@@ -20,6 +21,7 @@ HEADERS += \
     IFxPlayerSessionMgr.h \
     mediasession/FxDemuxThread.h \
     mediasession/FxFrameQueue.h \
+    mediasession/FxPacketQueue.h \
     mediasession/FxPlayerSessionMgr.h \
     mediasession/FxQueue.h \
     mediasession/IFxPlayerSessionMgr.h \
@@ -61,3 +63,5 @@ macx {
             -lpostproc \
             -lswscale \
 }
+
+DISTFILES +=

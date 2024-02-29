@@ -13,10 +13,10 @@ namespace fox
         {
         public:
             FxPlayerSessionMgr(IFxPlayerSessionMgrCallbackWeakPtr callback);
-            ~FxPlayerSessionMgr() = default;
+            ~FxPlayerSessionMgr();
 
         public:
-            virtual void init() override;
+            virtual void init(const char *url) override;
             virtual void openMedia(const std::string& filePath) override;
             virtual void playMedia() override;
             virtual void pauseMedia() override;

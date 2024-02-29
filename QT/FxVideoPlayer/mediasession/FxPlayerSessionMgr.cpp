@@ -13,9 +13,10 @@ std::shared_ptr<IFxPlayerSessionMgr> IFxPlayerSessionMgr::createPlaySessionMgr(I
     return std::make_shared<FxPlayerSessionMgr>(callback);
 }
 
-void FxPlayerSessionMgr::init() {
+void FxPlayerSessionMgr::init(const char *url) {
     auto callback = std::dynamic_pointer_cast<IFxDemuxThreadCallback>(shared_from_this());
     mDemuxThread = std::make_unique<FxDemuxThread>(callback);
+    mDemuxThread->open(url);
 }
 
 void FxPlayerSessionMgr::openMedia(const std::string& filePath) {
@@ -55,4 +56,8 @@ void FxPlayerSessionMgr::changeVolumn(int volumn) {
 void FxPlayerSessionMgr::watchFrame(int progress) {
 
     printf("progress:%d", progress);
+}
+
+FxPlayerSessionMgr::~FxPlayerSessionMgr() {
+    mDemuxThread = nullptr;
 }

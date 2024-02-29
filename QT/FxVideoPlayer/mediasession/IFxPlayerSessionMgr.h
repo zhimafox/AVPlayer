@@ -24,7 +24,7 @@ namespace fox
         class IFxPlayerSessionMgr : public std::enable_shared_from_this<IFxPlayerSessionMgr>
         {
         public:
-            virtual void init() = 0;
+            virtual void init(const char *url) = 0;
             virtual void openMedia(const std::string& filePath) = 0;
             virtual void playMedia() = 0;
             virtual void pauseMedia() = 0;

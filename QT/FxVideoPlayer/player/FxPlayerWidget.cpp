@@ -23,9 +23,10 @@ void FxPlayerWidget::initSubviews() {
     createThumbnailWidget();
 }
 
-void FxPlayerWidget::initSessionMgr() {
+void FxPlayerWidget::initSessionMgr(const char *url) {
     auto callback = std::dynamic_pointer_cast<IFxPlayerSessionMgrCallback>(shared_from_this());
     mPlayerSessionMgr = IFxPlayerSessionMgr::createPlaySessionMgr(callback);
+    mPlayerSessionMgr->init(url);
 }
 void FxPlayerWidget::initWindowsStyle() {
     // 设置窗口标题

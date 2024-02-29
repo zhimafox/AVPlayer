@@ -13,4 +13,5 @@ namespace fox
 
     }// namespace player
 }// namespace fox
+
 #endif // FXFRAMEQUEUE_H
