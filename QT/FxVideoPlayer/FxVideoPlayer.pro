@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    mediasession/FxDecodeThread.cpp \
     mediasession/FxDemuxThread.cpp \
     mediasession/FxFrameQueue.cpp \
     mediasession/FxPacketQueue.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
 
 HEADERS += \
     IFxPlayerSessionMgr.h \
+    mediasession/FxDecodeThread.h \
     mediasession/FxDemuxThread.h \
     mediasession/FxFrameQueue.h \
     mediasession/FxPacketQueue.h \

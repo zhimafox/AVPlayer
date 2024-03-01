@@ -4,6 +4,7 @@
 #include <string>
 #include "IFxPlayerSessionMgr.h"
 #include "FxDemuxThread.h"
+#include "FxDecodeThread.h"
 
 namespace fox
 {
@@ -11,6 +12,10 @@ namespace fox
     {
         class FxPacketQueue;
         using FxPacketQueuePtr = std::shared_ptr<FxPacketQueue>;
+
+        class FxFrameQueue;
+        using FxFrameQueuePtr = std::shared_ptr<FxFrameQueue>;
+
         class FxPlayerSessionMgr : public IFxPlayerSessionMgr, public IFxDemuxThreadCallback
         {
         public:
@@ -29,11 +34,17 @@ namespace fox
             virtual void changeVolumn(int volumn) override;
             virtual void watchFrame(int progress) override;
         private:
-            std::unique_ptr<FxDemuxThread> mDemuxThread;
-            IFxPlayerSessionMgrCallbackWeakPtr mCallback;
+            IFxPlayerSessionMgrCallbackWeakPtr pCallback;
 
-            FxPacketQueuePtr pAudioQueue;
-            FxPacketQueuePtr pVideoQueue;
+            std::unique_ptr<FxDemuxThread> pDemuxThread;
+            std::unique_ptr<FxDecodeThread> pAudioDecodeThread;
+            std::unique_ptr<FxDecodeThread> pVideoDecodeThread;
+
+            FxPacketQueuePtr pAudioPacketQueue;
+            FxPacketQueuePtr pVideoPacketQueue;
+
+            FxFrameQueuePtr pAudioFrameQueue;
+            FxFrameQueuePtr pVideoFrameQueue;
         };
 
     }// namespace player

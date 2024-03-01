@@ -37,12 +37,15 @@ namespace fox
             int stop();
             int run();
 
+            AVCodecParameters *getAudioCodecParameters();
+            AVCodecParameters *getVideoCodecParameters();
+
         private:
             std::string mUrl;
             std::weak_ptr<IFxDemuxThreadCallback> mCallback;
 
             char err2str[256]{ 0 };
-            AVFormatContext *mFmtCtx = nullptr;
+            AVFormatContext *mFmtCtx;
 
             int nAudioIndex{ -1 };
             int nVideoIndex{ -1 };

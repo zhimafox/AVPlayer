@@ -1,12 +1,13 @@
 #include "FxPlayerSessionMgr.h"
 #include <memory>
 #include "FxPacketQueue.h"
+#include "FxFrameQueue.h"
 
 using namespace std;
 using namespace fox::player;
 
 FxPlayerSessionMgr::FxPlayerSessionMgr(IFxPlayerSessionMgrCallbackWeakPtr callback)
-    : mCallback(callback) {
+    : pCallback(callback) {
 }
 
 std::shared_ptr<IFxPlayerSessionMgr> IFxPlayerSessionMgr::createPlaySessionMgr(IFxPlayerSessionMgrCallbackWeakPtr callback)
@@ -17,20 +18,40 @@ std::shared_ptr<IFxPlayerSessionMgr> IFxPlayerSessionMgr::createPlaySessionMgr(I
 void FxPlayerSessionMgr::init(const char *url) {
     auto callback = std::dynamic_pointer_cast<IFxDemuxThreadCallback>(shared_from_this());
 
-    pAudioQueue = std::make_shared<FxPacketQueue>();
-    pVideoQueue = std::make_shared<FxPacketQueue>();
-    mDemuxThread = std::make_unique<FxDemuxThread>(callback, pAudioQueue, pVideoQueue);
-    int ret = mDemuxThread->open(url);
+    pAudioPacketQueue = std::make_shared<FxPacketQueue>();
+    pVideoPacketQueue = std::make_shared<FxPacketQueue>();
+
+
+    pDemuxThread = std::make_unique<FxDemuxThread>(callback, pAudioPacketQueue, pVideoPacketQueue);
+    int ret = pDemuxThread->open(url);
     if (ret < 0) {
         printf("mDemuxThread->open failed url:%s", url);
     }
 
-    ret = mDemuxThread->start();
+    ret = pDemuxThread->start();
     if (ret < 0) {
         printf("mDemuxThread->start failed url:%s", url);
     }
+    pAudioFrameQueue = std::make_shared<FxFrameQueue>();
+    pVideoFrameQueue = std::make_shared<FxFrameQueue>();
 
-    mDemuxThread->stop();
+    pAudioDecodeThread = std::make_unique<FxDecodeThread>(pAudioPacketQueue, pAudioFrameQueue);
+    ret = pAudioDecodeThread->init(pDemuxThread->getAudioCodecParameters());
+    if (ret < 0) {
+        printf("pAudioDecodeThread->init failed url:%s", url);
+    }
+    pAudioDecodeThread->start();
+
+    pVideoDecodeThread = std::make_unique<FxDecodeThread>(pVideoPacketQueue, pVideoFrameQueue);
+    ret = pVideoDecodeThread->init(pDemuxThread->getVideoCodecParameters());
+    if (ret < 0) {
+        printf("pVideoDecodeThread->init failed url:%s", url);
+    }
+    pVideoDecodeThread->start();
+
+    pDemuxThread->stop();
+    pAudioDecodeThread->stop();
+    pVideoDecodeThread->stop();
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 }
@@ -75,5 +96,12 @@ void FxPlayerSessionMgr::watchFrame(int progress) {
 }
 
 FxPlayerSessionMgr::~FxPlayerSessionMgr() {
-    mDemuxThread.reset();
+    pAudioDecodeThread.reset();
+    pVideoDecodeThread.reset();
+    pDemuxThread.reset();
+
+    pAudioPacketQueue.reset();
+    pVideoPacketQueue.reset();
+    pAudioFrameQueue.reset();
+    pVideoFrameQueue.reset();
 }
