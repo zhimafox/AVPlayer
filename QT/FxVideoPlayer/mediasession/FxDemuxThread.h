@@ -4,7 +4,7 @@
 #include <string>
 #include <thread>
 extern "C" {        // 用C规则编译指定的代码
-// #include "libavcodec/avcodec.h"
+#include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 // #include "libavutil/avutil.h"/*
 //#include "libswscale/swscale.h"
@@ -36,6 +36,9 @@ namespace fox
             int start();
             int stop();
             int run();
+            AVFormatContext *getFormatContext() {
+                return mFmtCtx;
+            }
 
             AVCodecParameters *getAudioCodecParameters();
             AVCodecParameters *getVideoCodecParameters();
@@ -46,14 +49,17 @@ namespace fox
 
             char err2str[256]{ 0 };
             AVFormatContext *mFmtCtx;
+            AVCodecContext*  m_codecContext  = nullptr;   // 解码器上下文
 
             int nAudioIndex{ -1 };
             int nVideoIndex{ -1 };
+            int nTotalFrames{ 0 };
+            int nTotalTime{ 0 }; //ms
+            int mObtainFrames{ 0 };
 
             std::atomic<bool> bAbort{ false };
             std::thread mThread;
             std::atomic<bool> bThreadRunning{ false };
-
 
             FxPacketQueuePtr pAudioQueue;
             FxPacketQueuePtr pVideoQueue;

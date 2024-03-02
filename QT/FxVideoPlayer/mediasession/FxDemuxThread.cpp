@@ -1,7 +1,7 @@
 #include "FxDemuxThread.h"
 
 extern "C" {        // 用C规则编译指定的代码
-// #include "libavcodec/avcodec.h"
+#include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 //#include "libswscale/swscale.h"
 //#include "libavutil/imgutils.h"*/
@@ -42,8 +42,20 @@ int FxDemuxThread::open(const char *url) {
     } else {
         mUrl = url;
     }
+
+    AVDictionary* dict = nullptr;
+    av_dict_set(&dict, "rtsp_transport", "tcp", 0);      // 设置rtsp流使用tcp打开，如果打开失败错误信息为【Error number -135 occurred】可以切换（UDP、tcp、udp_multicast、http），比如vlc推流就需要使用udp打开
+    av_dict_set(&dict, "max_delay", "3", 0);             // 设置最大复用或解复用延迟（以微秒为单位）。当通过【UDP】 接收数据时，解复用器尝试重新排序接收到的数据包（因为它们可能无序到达，或者数据包可能完全丢失）。这可以通过将最大解复用延迟设置为零（通过max_delayAVFormatContext 字段）来禁用。
+    av_dict_set(&dict, "timeout", "1000000", 0);         // 以微秒为单位设置套接字 TCP I/O 超时，如果等待时间过短，也可能会还没连接就返回了。
+
     printf("%s mUrl:%s", __FUNCTION__,  mUrl.c_str());
-    int ret = avformat_open_input(&mFmtCtx, mUrl.c_str(), NULL, NULL);
+    int ret = avformat_open_input(&mFmtCtx, mUrl.c_str(), NULL, &dict);
+    // 释放参数字典
+    if(dict)
+    {
+        av_dict_free(&dict);
+    }
+
     if (ret < 0) {
         av_strerror(ret, err2str, sizeof(err2str));
         printf("%s url:%s open failed, ret:%d, err2str:%s\n", __FUNCTION__, url, ret, err2str);
@@ -58,7 +70,6 @@ int FxDemuxThread::open(const char *url) {
         printf("avformat_find_stream_info %s failed:%s\n", mUrl.c_str(), buf);
         return -1;
     }
-
 
     //打开媒体文件成功
     printf("\n==== av_dump_format in_filename:%s ===\n", mUrl.c_str());
@@ -77,7 +88,9 @@ int FxDemuxThread::open(const char *url) {
     hour = total_seconds / 3600;
     minute = (total_seconds % 3600) / 60;
     second = (total_seconds % 60);
+    nTotalTime = total_seconds * 1000;
     //通过上述运算，可以得到媒体文件的总时长
+
     printf("total duration: %02d:%02d:%02d\n", hour, minute, second);
     printf("\n");
 
@@ -85,13 +98,37 @@ int FxDemuxThread::open(const char *url) {
     nAudioIndex = av_find_best_stream(mFmtCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
     nVideoIndex = av_find_best_stream(mFmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 
-    if (nAudioIndex < 0 && nAudioIndex < 0) {
+    if (nAudioIndex < 0 && nVideoIndex < 0) {
         printf("%s no any audio and video", __FUNCTION__);
         return -1;
     }
     printf("%s audioIndex:%d, videoIndex:%d", __FUNCTION__, nAudioIndex, nVideoIndex);
 
-    return -1;
+
+    // 为音频帧分配空间
+    // AVPacket *pkt = av_packet_alloc();
+    // if (!pkt) {
+    //     avformat_close_input(&mFmtCtx);
+    //     return AVERROR(ENOMEM);
+    // }
+
+    // // 读取音频帧
+    // while (av_read_frame(mFmtCtx, pkt) >= 0) {
+    //     if (pkt->stream_index == nVideoIndex) {
+    //         printf("++++++++++video pts: %lld\n", pkt->pts);
+    //         printf("video dts: %lld\n", pkt->dts);
+    //         printf("video size: %d\n", pkt->size);
+    //         printf("video pos: %lld\n", pkt->pos);
+    //         printf("video duration: %lf\n\n", pkt->duration * av_q2d(mFmtCtx->streams[nVideoIndex]->time_base));
+    //     }
+    //     av_packet_unref(pkt);
+    // }
+
+
+
+    // av_packet_free(&pkt);
+
+    return 0;
 }
 
 int FxDemuxThread::start() {
@@ -111,7 +148,7 @@ int FxDemuxThread::stop() {
 int FxDemuxThread::run() {
     printf("%s av_read_frame start", __FUNCTION__);
     int ret = 0;
-    AVPacket pkt;
+    AVPacket *pkt = av_packet_alloc();
     bThreadRunning = true;
     bool eofReached = false; // 添加一个标志表示是否已经读取到文件末尾
     while(!bAbort) {
@@ -121,7 +158,7 @@ int FxDemuxThread::run() {
             continue;
         }
 
-        ret = av_read_frame(mFmtCtx, &pkt);
+        ret = av_read_frame(mFmtCtx, pkt);
         if (ret < 0) {
             if (ret == AVERROR_EOF) {
                 eofReached = true; // 设置标志为 true 表示已经读取到文件末尾
@@ -132,8 +169,16 @@ int FxDemuxThread::run() {
             bAbort = true;
         }
 
-        if (pkt.stream_index == nAudioIndex) {
-            pAudioQueue->push(&pkt);
+        if (pkt->stream_index == nVideoIndex) {
+            // printf("+222+++++++++video pts: %lld\n", pkt->pts);
+            // printf("video dts: %lld\n", pkt->dts);
+            // printf("video size: %d\n", pkt->size);
+            // printf("video pos: %lld\n", pkt->pos);
+            // printf("video duration: %lf\n\n", pkt->duration * av_q2d(mFmtCtx->streams[nVideoIndex]->time_base));
+        }
+
+        if (pkt->stream_index == nAudioIndex) {
+            pAudioQueue->push(pkt);
             // printf("audio pts: %lld\n", pkt.pts);
             // printf("audio dts: %lld\n", pkt.dts);
             // printf("audio size: %d\n", pkt.size);
@@ -142,19 +187,47 @@ int FxDemuxThread::run() {
 
             auto size = pAudioQueue->size();
             //printf("audio pkt, size:%d\n", size);
-        } else if (pkt.stream_index == nVideoIndex) {
-            pVideoQueue->push(&pkt);
-            // printf("video pts: %lld\n", pkt.pts);
-            // printf("video dts: %lld\n", pkt.dts);
-            // printf("video size: %d\n", pkt.size);
-            // printf("video pos: %lld\n", pkt.pos);
-            //printf("video duration: %lf\n\n", pkt.duration * av_q2d(mFmtCtx->streams[nVideoIndex]->time_base));
+        } else if (pkt->stream_index == nVideoIndex) {
+          /*  printf("+44444++++++++video pts: %lld\n", pkt->pts);
+            printf("video dts: %lld\n", pkt->dts);
+            printf("video size: %d\n", pkt->size);
+            printf("video pos: %lld\n", pkt->pos);
+            printf("video duration: %lf\n\n", pkt->duration * av_q2d(mFmtCtx->streams[nVideoIndex]->time_base))*/;
+            // 计算当前帧时间（毫秒）
+// #if 1       // 方法一：适用于所有场景，但是存在一定误差
+//             auto rational  = &mFmtCtx->streams[nVideoIndex]->time_base;
+//             double frameRate = (rational->den == 0) ? 0 : (double(rational->num) / rational->den);
+//             pkt.pts =  static_cast<int>(std::round(pkt.pts * (1000 * frameRate)));
+//             pkt.pts =  static_cast<int>(std::round(pkt.dts * (1000 * frameRate)));
+// #else       // 方法二：适用于播放本地视频文件，计算每一帧时间较准，但是由于网络视频流无法获取总帧数，所以无法适用
+//             mObtainFrames++;
+//             m_packet->pts = qRound64(m_obtainFrames * (qreal(m_totalTime) / m_totalFrames));
+// #endif
+
+
+            // ret = avcodec_send_packet(m_codecContext, pkt);
+            // auto frame = av_frame_alloc();
+            // ret = avcodec_receive_frame(m_codecContext, frame);
+            // printf("%s(), testtest ======= avcodec_receive_frame name:%s "
+            //        "width:%d, height:%d ,pict_type:%d, sample_aspect_ratio:%d ,sample_rate:%d, pts:%d ,key_frame:%d, nVideoIndex:%d\n",
+            //        __FUNCTION__,
+            //        m_codecContext->codec->name,
+            //        frame->width,F
+            //        frame->height,
+            //        frame->pict_type,
+            //        frame->sample_aspect_ratio,
+            //        frame->sample_rate,
+            //        frame->pts,
+            //        frame->key_frame, nVideoIndex);
+            printf("%s Packet data:%d, videoIndex:%d\n", __FUNCTION__, pkt->buf->size);
+            pVideoQueue->push(pkt);
+
             auto size = pVideoQueue->size();
             //printf("video pkt, size:%d\n",size);
         } else {
-            printf("unknown stream_index:\n", pkt.stream_index);
+            printf("unknown stream_index:\n", pkt->stream_index);
         }
-        av_packet_unref(&pkt);
+        av_packet_unref(pkt);
     }
     bThreadRunning = false;
 

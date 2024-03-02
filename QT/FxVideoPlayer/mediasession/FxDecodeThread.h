@@ -28,7 +28,6 @@ namespace fox
             int start();
             int stop();
             void run();
-
         private:
             char err2str[256]{ 0 };
 
