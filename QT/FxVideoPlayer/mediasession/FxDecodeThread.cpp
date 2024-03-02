@@ -1,10 +1,6 @@
 #include "FxDecodeThread.h"
 #include "FxPacketQueue.h"
 #include "FxFrameQueue.h"
-#include <QDebug>
-#include <QImage>
-#include <QMutex>
-#include <qdatetime.h>
 using namespace fox::player;
 
 namespace fox
@@ -56,9 +52,9 @@ namespace fox
             {
                 return -1;
             }
+
             return ret;
         }
-
 
         int FxDecodeThread::start() {
             mThread = std::thread(&FxDecodeThread::run, this);
