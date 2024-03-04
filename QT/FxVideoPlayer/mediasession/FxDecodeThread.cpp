@@ -77,7 +77,7 @@ namespace fox
             AVFrame *m_frame = av_frame_alloc();
             while(!bAbort) {
                 if (pFrameQueuePtr->size() > 10) {
-                    std::this_thread::sleep_for(std::chrono::seconds(10));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     continue;
                 }
 
@@ -144,6 +144,7 @@ namespace fox
 
             }
             av_frame_unref(m_frame);
+            printf("\n%s(), decode finished.\n", __FUNCTION__);
         }
 
     }// namespace player

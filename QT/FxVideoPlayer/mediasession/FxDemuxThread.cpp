@@ -94,7 +94,6 @@ int FxDemuxThread::open(const char *url) {
     printf("total duration: %02d:%02d:%02d\n", hour, minute, second);
     printf("\n");
 
-
     nAudioIndex = av_find_best_stream(mFmtCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
     nVideoIndex = av_find_best_stream(mFmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 
@@ -102,32 +101,8 @@ int FxDemuxThread::open(const char *url) {
         printf("%s no any audio and video", __FUNCTION__);
         return -1;
     }
+
     printf("%s audioIndex:%d, videoIndex:%d", __FUNCTION__, nAudioIndex, nVideoIndex);
-
-
-    // 为音频帧分配空间
-    // AVPacket *pkt = av_packet_alloc();
-    // if (!pkt) {
-    //     avformat_close_input(&mFmtCtx);
-    //     return AVERROR(ENOMEM);
-    // }
-
-    // // 读取音频帧
-    // while (av_read_frame(mFmtCtx, pkt) >= 0) {
-    //     if (pkt->stream_index == nVideoIndex) {
-    //         printf("++++++++++video pts: %lld\n", pkt->pts);
-    //         printf("video dts: %lld\n", pkt->dts);
-    //         printf("video size: %d\n", pkt->size);
-    //         printf("video pos: %lld\n", pkt->pos);
-    //         printf("video duration: %lf\n\n", pkt->duration * av_q2d(mFmtCtx->streams[nVideoIndex]->time_base));
-    //     }
-    //     av_packet_unref(pkt);
-    // }
-
-
-
-    // av_packet_free(&pkt);
-
     return 0;
 }
 
@@ -157,8 +132,13 @@ int FxDemuxThread::run() {
             std::this_thread::sleep_for(std::chrono::seconds(10));
             continue;
         }
-
-        ret = av_read_frame(mFmtCtx, pkt);
+        try
+        {
+            ret = av_read_frame(mFmtCtx, pkt);
+        }catch(const char* e)
+        {
+            printf("%s(), av_read_frame failed, e:%s\n", __FUNCTION__, e);
+        }
         if (ret < 0) {
             if (ret == AVERROR_EOF) {
                 eofReached = true; // 设置标志为 true 表示已经读取到文件末尾
@@ -301,31 +281,34 @@ AVCodecParameters *FxDemuxThread::getVideoCodecParameters()
 {
     if (nVideoIndex != -1) {
         AVCodecParameters* codecParams = mFmtCtx->streams[nVideoIndex]->codecpar;
-        AVStream *in_stream = mFmtCtx->streams[nVideoIndex];// 音频流、视频流、字幕流
+        AVStream *videoStream = mFmtCtx->streams[nVideoIndex];// 音频流、视频流、字幕流
+        nWidth = videoStream->codecpar->width;
+        nHeight = videoStream->codecpar->height;
+
         printf("\n");
         printf("----- Video info:\n");
-        printf("index:%d\n", in_stream->index);
+        printf("index:%d\n", videoStream->index);
         // avg_frame_rate: 视频帧率,单位为fps，表示每秒出现多少帧
-        printf("fps:%lffps\n", av_q2d(in_stream->avg_frame_rate));
-        if (AV_CODEC_ID_MPEG4 == in_stream->codecpar->codec_id) //视频压缩编码格式
+        printf("fps:%lffps\n", av_q2d(videoStream->avg_frame_rate));
+        if (AV_CODEC_ID_MPEG4 == videoStream->codecpar->codec_id) //视频压缩编码格式
         {
             printf("video codec:MPEG4\n");
         }
-        else if (AV_CODEC_ID_H264 == in_stream->codecpar->codec_id) //视频压缩编码格式
+        else if (AV_CODEC_ID_H264 == videoStream->codecpar->codec_id) //视频压缩编码格式
         {
             printf("video codec:H264\n");
         }
         else
         {
-            printf("video codec_id:%d\n", in_stream->codecpar->codec_id);
+            printf("video codec_id:%d\n", videoStream->codecpar->codec_id);
         }
         // 视频帧宽度和帧高度
-        printf("width:%d height:%d\n", in_stream->codecpar->width,
-               in_stream->codecpar->height);
+        printf("width:%d height:%d\n", videoStream->codecpar->width,
+               videoStream->codecpar->height);
         //视频总时长，单位为秒。注意如果把单位放大为毫秒或者微妙，音频总时长跟视频总时长不一定相等的
-        if(in_stream->duration != AV_NOPTS_VALUE)
+        if(videoStream->duration != AV_NOPTS_VALUE)
         {
-            int duration_video = (in_stream->duration) * av_q2d(in_stream->time_base);
+            int duration_video = (videoStream->duration) * av_q2d(videoStream->time_base);
             printf("video duration: %02d:%02d:%02d\n",
                    duration_video / 3600,
                    (duration_video % 3600) / 60,

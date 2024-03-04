@@ -4,6 +4,14 @@
 #include <QEvent>
 #include <QDebug>
 
+#include "mediasession/FxFrameQueue.h"
+extern "C" {        // 用C规则编译指定的代码
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+//#include "libswscale/swscale.h"
+//#include "libavutil/imgutils.h"*/
+}
+
 FxPlayerWidget::FxPlayerWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -273,14 +281,28 @@ void FxPlayerWidget::handleUpdateThumbnailPosition(QPointF point){
 }
 
 //#IFxPlayerSessionMgrCallback implement start
-void FxPlayerWidget::onPlayTimeChange(int progress, int playtime/*second*/)
-{
+void FxPlayerWidget::onPlayTimeChange(int progress, int playtime/*second*/) {
     qDebug() << "progress:" << progress << "playtime:" << playtime;
 }
 
-void FxPlayerWidget::onPlayStateChange(const MediaPlayState state)
-{
-    qDebug() << "state:" << static_cast<int>(state);;
+void FxPlayerWidget::onPlayStateChange(const MediaPlayState state) {
+    qDebug() << "state:" << static_cast<int>(state);
+}
+
+void onDeliverAudioFrames(FxFrameQueuePtr audioFrames) {
+    qDebug() << "audioFrames.size:" << audioFrames->size();
+}
+
+void onDeliverVideoFrames(FxFrameQueuePtr videoFrames) {
+    qDebug() << " videoFrames.size:" << videoFrames->size();
+
+    AVFrame *frame = videoFrames->front();
+
+    if (frame) {
+        qDebug() << " draw frame:";
+        videoFrames->pop(1);
+        av_frame_unref(frame);
+    }
 }
 
 //#IFxPlayerSessionMgrCallback implement end

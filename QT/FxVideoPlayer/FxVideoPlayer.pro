@@ -10,9 +10,11 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    mediasession/FxAudioOutput.cpp \
     mediasession/FxDecodeThread.cpp \
     mediasession/FxDemuxThread.cpp \
     mediasession/FxFrameQueue.cpp \
+    mediasession/FxMediaUtils.cpp \
     mediasession/FxPacketQueue.cpp \
     mediasession/FxPlayerSessionMgr.cpp \
     player/FxPlayerWidget.cpp \
@@ -20,9 +22,11 @@ SOURCES += \
 
 HEADERS += \
     IFxPlayerSessionMgr.h \
+    mediasession/FxAudioOutput.h \
     mediasession/FxDecodeThread.h \
     mediasession/FxDemuxThread.h \
     mediasession/FxFrameQueue.h \
+    mediasession/FxMediaUtils.h \
     mediasession/FxPacketQueue.h \
     mediasession/FxPlayerSessionMgr.h \
     mediasession/FxQueue.h \
@@ -54,7 +58,7 @@ msvc {
 }
 
 macx {
-    FFMPEG_HOME = /opt/homebrew/Cellar/ffmpeg/6.1.1_3
+    FFMPEG_HOME = /opt/homebrew/Cellar/ffmpeg/6.1.1_4
     INCLUDEPATH += $$FFMPEG_HOME/include
     LIBS += -L$$FFMPEG_HOME/lib \
             -lavcodec \

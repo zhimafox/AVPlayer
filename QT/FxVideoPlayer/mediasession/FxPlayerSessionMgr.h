@@ -5,17 +5,12 @@
 #include "IFxPlayerSessionMgr.h"
 #include "FxDemuxThread.h"
 #include "FxDecodeThread.h"
+#include "FxMediaUtils.h"
 
 namespace fox
 {
     namespace player
     {
-        class FxPacketQueue;
-        using FxPacketQueuePtr = std::shared_ptr<FxPacketQueue>;
-
-        class FxFrameQueue;
-        using FxFrameQueuePtr = std::shared_ptr<FxFrameQueue>;
-
         class FxPlayerSessionMgr : public IFxPlayerSessionMgr, public IFxDemuxThreadCallback
         {
         public:

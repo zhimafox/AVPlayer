@@ -10,6 +10,7 @@
 #include <QObject>
 #include "FxProgressBar.h"
 #include "mediasession/IFxPlayerSessionMgr.h"
+#include "mediasession/FxMediaUtils.h"
 using namespace fox::player;
 
 class FxPlayerWidget : public QWidget, public IFxPlayerSessionMgrCallback, public std::enable_shared_from_this<FxPlayerWidget>
@@ -25,6 +26,8 @@ public: //IFxPlayerSessionMgrCallback
 
     virtual void onPlayTimeChange(int progress, int playtime/*second*/) override;
     virtual void onPlayStateChange(const MediaPlayState state) override;
+    virtual void onDeliverAudioFrames(FxFrameQueuePtr audioFrames) override;
+    virtual void onDeliverVideoFrames(FxFrameQueuePtr videoFrames) override;
 
 private:
     void initSubviews();

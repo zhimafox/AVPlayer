@@ -26,6 +26,7 @@ void FxPlayerSessionMgr::init(const char *url) {
     int ret = pDemuxThread->open(url);
     if (ret < 0) {
         printf("mDemuxThread->open failed url:%s", url);
+        return;
     }
 
     ret = pDemuxThread->start();
@@ -35,12 +36,12 @@ void FxPlayerSessionMgr::init(const char *url) {
     pAudioFrameQueue = std::make_shared<FxFrameQueue>();
     pVideoFrameQueue = std::make_shared<FxFrameQueue>();
 
-    // pAudioDecodeThread = std::make_unique<FxDecodeThread>(pAudioPacketQueue, pAudioFrameQueue);
-    // ret = pAudioDecodeThread->init(pDemuxThread->getAudioCodecParameters());
-    // if (ret < 0) {
-    //     printf("pAudioDecodeThread->init failed url:%s", url);
-    // }
-    // pAudioDecodeThread->start();
+    pAudioDecodeThread = std::make_unique<FxDecodeThread>(pAudioPacketQueue, pAudioFrameQueue);
+    ret = pAudioDecodeThread->init(pDemuxThread->getAudioCodecParameters());
+    if (ret < 0) {
+        printf("pAudioDecodeThread->init failed url:%s", url);
+    }
+    pAudioDecodeThread->start();
 
     pVideoDecodeThread = std::make_unique<FxDecodeThread>(pVideoPacketQueue, pVideoFrameQueue);
     ret = pVideoDecodeThread->init(pDemuxThread->getVideoCodecParameters());

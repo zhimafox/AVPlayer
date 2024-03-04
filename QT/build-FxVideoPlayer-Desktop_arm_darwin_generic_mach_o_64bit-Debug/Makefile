@@ -53,6 +53,7 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = ../FxVideoPlayer/main.cpp \
+		../FxVideoPlayer/mediasession/FxAudioOutput.cpp \
 		../FxVideoPlayer/mediasession/FxDecodeThread.cpp \
 		../FxVideoPlayer/mediasession/FxDemuxThread.cpp \
 		../FxVideoPlayer/mediasession/FxFrameQueue.cpp \
@@ -63,6 +64,7 @@ SOURCES       = ../FxVideoPlayer/main.cpp \
 		moc_FxPlayerWidget.cpp \
 		moc_FxProgressBar.cpp
 OBJECTS       = main.o \
+		FxAudioOutput.o \
 		FxDecodeThread.o \
 		FxDemuxThread.o \
 		FxFrameQueue.o \
@@ -387,6 +389,7 @@ DIST          = /opt/homebrew/share/qt/mkspecs/features/spec_pre.prf \
 		/opt/homebrew/share/qt/mkspecs/features/yacc.prf \
 		/opt/homebrew/share/qt/mkspecs/features/lex.prf \
 		../FxVideoPlayer/FxVideoPlayer.pro IFxPlayerSessionMgr.h \
+		../FxVideoPlayer/mediasession/FxAudioOutput.h \
 		../FxVideoPlayer/mediasession/FxDecodeThread.h \
 		../FxVideoPlayer/mediasession/FxDemuxThread.h \
 		../FxVideoPlayer/mediasession/FxFrameQueue.h \
@@ -396,6 +399,7 @@ DIST          = /opt/homebrew/share/qt/mkspecs/features/spec_pre.prf \
 		../FxVideoPlayer/mediasession/IFxPlayerSessionMgr.h \
 		../FxVideoPlayer/player/FxPlayerWidget.h \
 		../FxVideoPlayer/player/FxProgressBar.h ../FxVideoPlayer/main.cpp \
+		../FxVideoPlayer/mediasession/FxAudioOutput.cpp \
 		../FxVideoPlayer/mediasession/FxDecodeThread.cpp \
 		../FxVideoPlayer/mediasession/FxDemuxThread.cpp \
 		../FxVideoPlayer/mediasession/FxFrameQueue.cpp \
@@ -1090,8 +1094,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../FxVideoPlayer/resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/homebrew/share/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents IFxPlayerSessionMgr.h ../FxVideoPlayer/mediasession/FxDecodeThread.h ../FxVideoPlayer/mediasession/FxDemuxThread.h ../FxVideoPlayer/mediasession/FxFrameQueue.h ../FxVideoPlayer/mediasession/FxPacketQueue.h ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.h ../FxVideoPlayer/mediasession/FxQueue.h ../FxVideoPlayer/mediasession/IFxPlayerSessionMgr.h ../FxVideoPlayer/player/FxPlayerWidget.h ../FxVideoPlayer/player/FxProgressBar.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../FxVideoPlayer/main.cpp ../FxVideoPlayer/mediasession/FxDecodeThread.cpp ../FxVideoPlayer/mediasession/FxDemuxThread.cpp ../FxVideoPlayer/mediasession/FxFrameQueue.cpp ../FxVideoPlayer/mediasession/FxPacketQueue.cpp ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.cpp ../FxVideoPlayer/player/FxPlayerWidget.cpp ../FxVideoPlayer/player/FxProgressBar.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents IFxPlayerSessionMgr.h ../FxVideoPlayer/mediasession/FxAudioOutput.h ../FxVideoPlayer/mediasession/FxDecodeThread.h ../FxVideoPlayer/mediasession/FxDemuxThread.h ../FxVideoPlayer/mediasession/FxFrameQueue.h ../FxVideoPlayer/mediasession/FxPacketQueue.h ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.h ../FxVideoPlayer/mediasession/FxQueue.h ../FxVideoPlayer/mediasession/IFxPlayerSessionMgr.h ../FxVideoPlayer/player/FxPlayerWidget.h ../FxVideoPlayer/player/FxProgressBar.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../FxVideoPlayer/main.cpp ../FxVideoPlayer/mediasession/FxAudioOutput.cpp ../FxVideoPlayer/mediasession/FxDecodeThread.cpp ../FxVideoPlayer/mediasession/FxDemuxThread.cpp ../FxVideoPlayer/mediasession/FxFrameQueue.cpp ../FxVideoPlayer/mediasession/FxPacketQueue.cpp ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.cpp ../FxVideoPlayer/player/FxPlayerWidget.cpp ../FxVideoPlayer/player/FxProgressBar.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1235,6 +1239,9 @@ main.o: ../FxVideoPlayer/main.cpp ../FxVideoPlayer/player/FxPlayerWidget.h \
 		/opt/homebrew/lib/QtWidgets.framework/Headers/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../FxVideoPlayer/main.cpp
 
+FxAudioOutput.o: ../FxVideoPlayer/mediasession/FxAudioOutput.cpp ../FxVideoPlayer/mediasession/FxAudioOutput.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o FxAudioOutput.o ../FxVideoPlayer/mediasession/FxAudioOutput.cpp
+
 FxDecodeThread.o: ../FxVideoPlayer/mediasession/FxDecodeThread.cpp ../FxVideoPlayer/mediasession/FxDecodeThread.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/avcodec.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/samplefmt.h \
@@ -1274,11 +1281,11 @@ FxDecodeThread.o: ../FxVideoPlayer/mediasession/FxDecodeThread.cpp ../FxVideoPla
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o FxDecodeThread.o ../FxVideoPlayer/mediasession/FxDecodeThread.cpp
 
 FxDemuxThread.o: ../FxVideoPlayer/mediasession/FxDemuxThread.cpp ../FxVideoPlayer/mediasession/FxDemuxThread.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avformat.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_par.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/avcodec.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/samplefmt.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/attributes.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/avutil.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/common.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/attributes.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/error.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/macros.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/avconfig.h \
@@ -1289,20 +1296,23 @@ FxDemuxThread.o: ../FxVideoPlayer/mediasession/FxDemuxThread.cpp ../FxVideoPlaye
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/intfloat.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/log.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/pixfmt.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/channel_layout.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_id.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/samplefmt.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/version_major.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/defs.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/packet.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/buffer.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/channel_layout.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/dict.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avio.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version_major.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/frame.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/hwcontext.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_id.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/version_major.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/defs.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/packet.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/version.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_desc.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_par.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avformat.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avio.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version_major.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version.h \
 		../FxVideoPlayer/mediasession/FxPacketQueue.h \
 		../FxVideoPlayer/mediasession/FxQueue.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o FxDemuxThread.o ../FxVideoPlayer/mediasession/FxDemuxThread.cpp
@@ -1376,11 +1386,11 @@ FxPacketQueue.o: ../FxVideoPlayer/mediasession/FxPacketQueue.cpp ../FxVideoPlaye
 FxPlayerSessionMgr.o: ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.cpp ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.h \
 		../FxVideoPlayer/mediasession/IFxPlayerSessionMgr.h \
 		../FxVideoPlayer/mediasession/FxDemuxThread.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avformat.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_par.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/avcodec.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/samplefmt.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/attributes.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/avutil.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/common.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/attributes.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/error.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/macros.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/avconfig.h \
@@ -1391,24 +1401,24 @@ FxPlayerSessionMgr.o: ../FxVideoPlayer/mediasession/FxPlayerSessionMgr.cpp ../Fx
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/intfloat.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/log.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/pixfmt.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/channel_layout.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_id.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/samplefmt.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/version_major.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/defs.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/packet.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/buffer.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/channel_layout.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/dict.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avio.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version_major.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/frame.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavutil/hwcontext.h \
-		../FxVideoPlayer/mediasession/FxDecodeThread.h \
-		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/avcodec.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_id.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/version_major.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/defs.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/packet.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/version.h \
 		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_desc.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavcodec/codec_par.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avformat.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/avio.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version_major.h \
+		/opt/homebrew/Cellar/ffmpeg/6.1.1_3/include/libavformat/version.h \
+		../FxVideoPlayer/mediasession/FxDecodeThread.h \
 		../FxVideoPlayer/mediasession/FxPacketQueue.h \
 		../FxVideoPlayer/mediasession/FxQueue.h \
 		../FxVideoPlayer/mediasession/FxFrameQueue.h

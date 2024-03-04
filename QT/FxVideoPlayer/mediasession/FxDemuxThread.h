@@ -3,6 +3,8 @@
 
 #include <string>
 #include <thread>
+#include "FxMediaUtils.h"
+
 extern "C" {        // 用C规则编译指定的代码
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
@@ -15,9 +17,6 @@ namespace fox
 {
     namespace player
     {
-        class FxPacketQueue;
-        using FxPacketQueuePtr = std::shared_ptr<FxPacketQueue>;
-        class FxFrameQueue;
         class IFxDemuxThreadCallback {
         public:
             virtual void onPlayCompleted() {};
@@ -56,6 +55,9 @@ namespace fox
             int nTotalFrames{ 0 };
             int nTotalTime{ 0 }; //ms
             int mObtainFrames{ 0 };
+
+            int nWidth{ 0 };
+            int nHeight { 0 };
 
             std::atomic<bool> bAbort{ false };
             std::thread mThread;

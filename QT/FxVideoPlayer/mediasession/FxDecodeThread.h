@@ -2,22 +2,19 @@
 #define FXDECODETHREAD_H
 #include <string>
 #include <thread>
+#include "FxMediaUtils.h"
+
 extern "C" {        // 用C规则编译指定的代码
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 //#include "libswscale/swscale.h"
 //#include "libavutil/imgutils.h"*/
 }
+
 namespace fox
 {
     namespace player
     {
-        class FxPacketQueue;
-        using FxPacketQueuePtr = std::shared_ptr<FxPacketQueue>;
-
-        class FxFrameQueue;
-        using FxFrameQueuePtr = std::shared_ptr<FxFrameQueue>;
-
         class FxDecodeThread
         {
         public:

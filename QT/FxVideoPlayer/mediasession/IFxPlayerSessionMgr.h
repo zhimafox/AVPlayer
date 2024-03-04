@@ -1,6 +1,14 @@
 #ifndef IFXPLAYERSESSIONMGR_H
 #define IFXPLAYERSESSIONMGR_H
 #include <string>
+#include "FxMediaUtils.h"
+
+extern "C" {        // 用C规则编译指定的代码
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+//#include "libswscale/swscale.h"
+//#include "libavutil/imgutils.h"*/
+}
 
 namespace fox
 {
@@ -18,6 +26,8 @@ namespace fox
         class IFxPlayerSessionMgrCallback {
             virtual void onPlayTimeChange(int progress, int playtime/*second*/) = 0;
             virtual void onPlayStateChange(const MediaPlayState state) = 0;
+            virtual void onDeliverAudioFrames(FxFrameQueuePtr audioFrames) = 0;
+            virtual void onDeliverVideoFrames(FxFrameQueuePtr videoFrames) = 0;
         };
 
         using IFxPlayerSessionMgrCallbackWeakPtr = std::weak_ptr<IFxPlayerSessionMgrCallback>;
