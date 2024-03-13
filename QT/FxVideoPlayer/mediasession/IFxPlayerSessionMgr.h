@@ -26,8 +26,8 @@ namespace fox
         class IFxPlayerSessionMgrCallback {
             virtual void onPlayTimeChange(int progress, int playtime/*second*/) = 0;
             virtual void onPlayStateChange(const MediaPlayState state) = 0;
-            virtual void onDeliverAudioFrames(FxFrameQueuePtr audioFrames) = 0;
-            virtual void onDeliverVideoFrames(FxFrameQueuePtr videoFrames) = 0;
+            virtual void onDeliverAudioFrames(FxFrameDataQueuePtr audioFrameDataQueue) = 0;
+            virtual void onDeliverVideoFrames(FxFrameDataQueuePtr videoFrameDataQueue) = 0;
         };
 
         using IFxPlayerSessionMgrCallbackWeakPtr = std::weak_ptr<IFxPlayerSessionMgrCallback>;

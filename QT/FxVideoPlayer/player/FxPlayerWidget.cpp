@@ -289,22 +289,37 @@ void FxPlayerWidget::onPlayStateChange(const MediaPlayState state) {
     qDebug() << "state:" << static_cast<int>(state);
 }
 
-void onDeliverAudioFrames(FxFrameQueuePtr audioFrames) {
-    qDebug() << "audioFrames.size:" << audioFrames->size();
+void onDeliverAudioFrames(FxFrameQueuePtr audioFrameQueue) {
+    qDebug() << "audioFrames.size:" << audioFrameQueue->size();
+
+    // while(audioFrameDataQueue->size() > 0) {
+    //     if (auto frameData = audioFrameDataQueue->popDirectly()) {
+    //         qDebug() << "frameData->width:" << frameData->width;
+    //     }
+    // }
 }
 
-void onDeliverVideoFrames(FxFrameQueuePtr videoFrames) {
-    qDebug() << " videoFrames.size:" << videoFrames->size();
+void onDeliverVideoFrames(FxFrameQueuePtr videoFrameQueue) {
+    qDebug() << " videoFrames.size:" << videoFrameQueue->size();
 
-    AVFrame *frame = videoFrames->front();
-
-    if (frame) {
-        qDebug() << " draw frame:";
-        videoFrames->pop(1);
-        av_frame_unref(frame);
-    }
+    // while(videoFrameDataQueue->size() > 0) {
+    //     if (auto frameData = videoFrameDataQueue->popDirectly()) {
+    //         qDebug() << "frameData->width:" << frameData->width;
+    //     }
+    // }
 }
-
+// void showNextFrame() {
+//     // Check if there's a frame available in the queue
+//     if (!m_frameQueue->isEmpty()) {
+//         AVFrame *frame = m_frameQueue->pop();
+//         // Convert AVFrame to QImage (assuming RGB format)
+//         QImage image(frame->data[0], frame->width, frame->height, QImage::Format_RGB888);
+//         // Display the image on QLabel
+//         m_videoLabel->setPixmap(QPixmap::fromImage(image));
+//         // Release the frame
+//         av_frame_unref(frame);
+//     }
+// }
 //#IFxPlayerSessionMgrCallback implement end
 
 FxPlayerWidget::~FxPlayerWidget() {}

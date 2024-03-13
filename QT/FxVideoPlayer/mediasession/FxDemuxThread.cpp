@@ -256,6 +256,8 @@ AVCodecParameters *FxDemuxThread::getAudioCodecParameters()
         {
             printf("audio codec_id:%d\n", in_stream->codecpar->codec_id);
         }
+
+
         // 音频总时长，单位为秒。注意如果把单位放大为毫秒或者微妙，音频总时长跟视频总时长不一定相等的
         if(in_stream->duration != AV_NOPTS_VALUE)
         {

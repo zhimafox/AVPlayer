@@ -15,10 +15,15 @@ namespace fox
 {
     namespace player
     {
+        enum class FxDecodeThreadType {
+            FxAudioDecodeThread,
+            FxVideoDecodeThread
+        };
+
         class FxDecodeThread
         {
         public:
-            FxDecodeThread(FxPacketQueuePtr packetQueuePtr, FxFrameQueuePtr frameQueuePtr);
+            FxDecodeThread(FxPacketQueuePtr packetQueuePtr, FxFrameQueuePtr frameQueuePtr, FxDecodeThreadType type);
             virtual ~FxDecodeThread();
 
             int init(AVCodecParameters *par);
@@ -27,6 +32,7 @@ namespace fox
             void run();
         private:
             char err2str[256]{ 0 };
+            FxDecodeThreadType nType;
 
             std::atomic<bool> bAbort{ false };
             std::thread mThread;

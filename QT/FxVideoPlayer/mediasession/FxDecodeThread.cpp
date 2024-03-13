@@ -7,9 +7,10 @@ namespace fox
 {
     namespace player
     {
-        FxDecodeThread::FxDecodeThread(FxPacketQueuePtr packetQueuePtr, FxFrameQueuePtr frameQueuePtr)
+        FxDecodeThread::FxDecodeThread(FxPacketQueuePtr packetQueuePtr, FxFrameQueuePtr frameQueuePtr, FxDecodeThreadType type)
         : pPacketQueuePtr(packetQueuePtr)
-        , pFrameQueuePtr(frameQueuePtr) {
+        , pFrameQueuePtr(frameQueuePtr)
+        , nType(type) {
 
         }
 
@@ -43,6 +44,15 @@ namespace fox
                 return -1;
             }
 
+            if (nType == FxDecodeThreadType::FxAudioDecodeThread)
+            printf("=================== Audio Information ===================");
+            printf("Sample Rate: %d", pCodecCtx->sample_rate);
+            printf("FMT: %d, %s", pCodecCtx->sample_fmt, av_get_sample_fmt_name(pCodecCtx->sample_fmt));
+            printf("Channels: %d", pCodecCtx->channels);
+            printf("Channel Layout: %llu", pCodecCtx->channel_layout);
+            printf("Decodec: %s", codec->long_name);
+            printf("=========================================================");
+
             pCodecCtx->flags2 |= AV_CODEC_FLAG2_FAST;    // 允许不符合规范的加速技巧。
             pCodecCtx->thread_count = 8;                 // 使用8线程解码
 
@@ -74,7 +84,7 @@ namespace fox
 
         void FxDecodeThread::run() {
 
-            AVFrame *m_frame = av_frame_alloc();
+            AVFrame m_frame = av_frame_alloc();
             while(!bAbort) {
                 if (pFrameQueuePtr->size() > 10) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -99,7 +109,7 @@ namespace fox
                 av_packet_unref(m_packet);  // 释放数据包，引用计数-1，为0时释放空间
                 printf("\n%s(), =============================\n", __FUNCTION__);
                 while(true) {
-                    ret = avcodec_receive_frame(pCodecCtx, m_frame);
+                    ret = avcodec_receive_frame(pCodecCtx, &m_frame);
 
                     printf("\n%s(), ++++++++avcodec_receive_frame+++++++++\n", __FUNCTION__);
                     if (ret == AVERROR(EAGAIN)) {
@@ -120,30 +130,30 @@ namespace fox
                                "width:%d, height:%d ,pict_type:%d, sample_aspect_ratio:%d ,sample_rate:%d, pts:%d ,key_frame:%d\n",
                                __FUNCTION__,
                                pCodecCtx->codec->name,
-                               m_frame->width,
-                               m_frame->height,
-                               m_frame->pict_type,
-                               m_frame->sample_aspect_ratio,
-                               m_frame->sample_rate,
-                               m_frame->pts,
-                               m_frame->key_frame);
-                        if (m_frame->pict_type == AV_PICTURE_TYPE_P) {
+                               m_frame.width,
+                               m_frame.height,
+                               m_frame.pict_type,
+                               m_frame.sample_aspect_ratio,
+                               m_frame.sample_rate,
+                               m_frame.pts,
+                               m_frame.key_frame);
+                        if (m_frame.pict_type == AV_PICTURE_TYPE_P) {
                             printf("%s(),帧类型:AV_PICTURE_TYPE_P", __FUNCTION__);
-                        } else if (m_frame->pict_type == AV_PICTURE_TYPE_I) {
+                        } else if (m_frame.pict_type == AV_PICTURE_TYPE_I) {
                             AVCodecInternal *internal = pCodecCtx->internal;
 
                             printf("%s(),帧类型:AV_PICTURE_TYPE_I", __FUNCTION__);
-                        } else if (m_frame->pict_type == AV_PICTURE_TYPE_B) {
+                        } else if (m_frame.pict_type == AV_PICTURE_TYPE_B) {
                             printf("%s(),帧类型:AV_PICTURE_TYPE_B", __FUNCTION__);
                         } else {
-                            printf("%s(),帧类型:%s:", m_frame->pict_type, __FUNCTION__);
+                            printf("%s(),帧类型:%s:", m_frame.pict_type, __FUNCTION__);
                         }
                     }
 
                 }
 
             }
-            av_frame_unref(m_frame);
+            av_frame_unref(&m_frame);
             printf("\n%s(), decode finished.\n", __FUNCTION__);
         }
 

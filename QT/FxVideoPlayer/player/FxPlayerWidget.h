@@ -26,8 +26,8 @@ public: //IFxPlayerSessionMgrCallback
 
     virtual void onPlayTimeChange(int progress, int playtime/*second*/) override;
     virtual void onPlayStateChange(const MediaPlayState state) override;
-    virtual void onDeliverAudioFrames(FxFrameQueuePtr audioFrames) override;
-    virtual void onDeliverVideoFrames(FxFrameQueuePtr videoFrames) override;
+    virtual void onDeliverAudioFrames(FxFrameDataQueuePtr audioFrameDataQueue) override;
+    virtual void onDeliverVideoFrames(FxFrameDataQueuePtr videoFrameDataQueue) override;
 
 private:
     void initSubviews();

@@ -62,6 +62,22 @@ template<typename T>
                     return 0;
                 }
 
+                T popDirectly() {
+                    std::unique_lock<std::mutex> unique(mMutex);
+                    if (mQueue.empty()) {
+                        return nullptr;
+                    }
+
+                    if (bAbort) {
+                        return nullptr;
+                    }
+
+                    auto obj = mQueue.front();
+                    mQueue.pop();
+
+                    return obj;
+                }
+
                 int front(T &obj) {
                     std::lock_guard<std::mutex> lock(mMutex);
                     if (bAbort) {
