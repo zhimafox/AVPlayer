@@ -14,20 +14,13 @@ namespace fox
 {
     namespace player
     {
-        enum class MediaPlayState {
-            STOPPED,
-            PLAYING,
-            PAUSED,
-            SEEKING,
-            DOWNLOADING,
-            ERROR,
-        };
 
         class IFxPlayerSessionMgrCallback {
+        public:
             virtual void onPlayTimeChange(int progress, int playtime/*second*/) = 0;
             virtual void onPlayStateChange(const MediaPlayState state) = 0;
-            virtual void onDeliverAudioFrames(FxFrameDataQueuePtr audioFrameDataQueue) = 0;
-            virtual void onDeliverVideoFrames(FxFrameDataQueuePtr videoFrameDataQueue) = 0;
+            virtual void onDeliverAudioFrames(FxFrameQueuePtr audioFrameQueue) = 0;
+            virtual void onDeliverVideoFrames(FxFrameQueuePtr videoFrameQueue) = 0;
         };
 
         using IFxPlayerSessionMgrCallbackWeakPtr = std::weak_ptr<IFxPlayerSessionMgrCallback>;

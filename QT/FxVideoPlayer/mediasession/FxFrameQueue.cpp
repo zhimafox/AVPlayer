@@ -18,10 +18,12 @@ void FxFrameQueue::release()
     while(true) {
         AVFrame *frame = nullptr;
         int ret = mQueue.pop(frame, 1);
-        if (ret > 0) {
+        if (ret > 0)
+        {
             av_frame_free(&frame);
             continue;
-        } else {
+        } else
+        {
             break;
         }
     }
@@ -44,9 +46,12 @@ AVFrame *FxFrameQueue::pop(const int timeout)
     AVFrame *temp_frame = nullptr;
     int ret = mQueue.pop(temp_frame, timeout);
     if (ret < 0) {
-        if (ret == -1) {
+        if (ret == -1)
+        {
             printf("mQueue.pop failed");
-        } else if (ret == -2) {
+        }
+        else if (ret == -2)
+        {
             printf("mQueue.pop failed, queue is empty");
         }
     }
@@ -65,4 +70,9 @@ AVFrame *FxFrameQueue::front()
         }
     }
     return temp_frame;
+}
+
+bool FxFrameQueue::isEmpty()
+{
+    return mQueue.isEmpty();
 }

@@ -93,6 +93,11 @@ template<typename T>
                     return 0;
                 }
 
+                bool isEmpty() {
+                    std::lock_guard<std::mutex> lock(mMutex);
+                    return mQueue.empty();
+                }
+
             private:
                 std::atomic<bool> bAbort{ false };
                 std::mutex mMutex;

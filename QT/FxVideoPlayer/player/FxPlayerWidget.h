@@ -9,8 +9,10 @@
 #include <QBoxLayout>
 #include <QObject>
 #include "FxProgressBar.h"
+#include "QtCore/qtimer.h"
 #include "mediasession/IFxPlayerSessionMgr.h"
 #include "mediasession/FxMediaUtils.h"
+#include "FxVideoWidget.h""
 using namespace fox::player;
 
 class FxPlayerWidget : public QWidget, public IFxPlayerSessionMgrCallback, public std::enable_shared_from_this<FxPlayerWidget>
@@ -26,8 +28,9 @@ public: //IFxPlayerSessionMgrCallback
 
     virtual void onPlayTimeChange(int progress, int playtime/*second*/) override;
     virtual void onPlayStateChange(const MediaPlayState state) override;
-    virtual void onDeliverAudioFrames(FxFrameDataQueuePtr audioFrameDataQueue) override;
-    virtual void onDeliverVideoFrames(FxFrameDataQueuePtr videoFrameDataQueue) override;
+
+    virtual void onDeliverAudioFrames(FxFrameQueuePtr audioFrameQueue) override;
+    virtual void onDeliverVideoFrames(FxFrameQueuePtr videoFrameQueue) override;
 
 private:
     void initSubviews();
@@ -45,18 +48,31 @@ private:
     QBoxLayout* createLayoutFrame(QBoxLayout *parent, int height, QString colorString, bool isHorizontal = true);
     QPushButton *createButton(QString iconName, int width = 30, int height = 30);
 
+    void initPlayer();
     void handleSeekProgress(int ratio);
     void handleWatchProgress(int ratio);
     void handleShowThumbnail();
     void handleHideThumbnail();
     void handleUpdateThumbnailPosition(QPointF point);
 
-private slots:
+    void showNextAudioFrame();
+    void showNextVideoFrame();
+
+public slots:
     void updateDurationLabel();
     void updateWindowTitle(QString title);
+    void start();
+    void pause();
+    void stop();
+    void seek(int positionMs);
+
+
+signals:
+    void updateImage(const QImage& image);      // 将读取到的视频图像发送出去
+    void playState(MediaPlayState state);       // 视频播放状态发送改变时触发
 
 private:
-    QWidget *mVideoImageWidget;
+    FxVideoWidget *mVideoImageWidget;
     FxProgressBar *mProgressBar;
     QWidget *mThumbnailWidget;
 
@@ -77,6 +93,10 @@ private:
     QTimer *mTimer;
     int mMediaDuration = 0;
 
-    std::shared_ptr<fox::player::IFxPlayerSessionMgr> mPlayerSessionMgr;
+    std::shared_ptr<fox::player::IFxPlayerSessionMgr> pPlayerSessionMgr;
+    FxFrameQueuePtr pAudioFrameQueue;
+    FxFrameQueuePtr pVideoFrameQueue;
+
+    QLabel *mVideoLabel;
 };
 #endif // FXPLAYERWIDGET_H

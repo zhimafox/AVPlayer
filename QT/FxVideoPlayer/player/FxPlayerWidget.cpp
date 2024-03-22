@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QEvent>
 #include <QDebug>
+#include "mediasession/FxFrameQueue.h"
 
 #include "mediasession/FxFrameQueue.h"
 extern "C" {        // 用C规则编译指定的代码
@@ -33,8 +34,8 @@ void FxPlayerWidget::initSubviews() {
 
 void FxPlayerWidget::initSessionMgr(const char *url) {
     auto callback = std::dynamic_pointer_cast<IFxPlayerSessionMgrCallback>(shared_from_this());
-    mPlayerSessionMgr = IFxPlayerSessionMgr::createPlaySessionMgr(callback);
-    mPlayerSessionMgr->init(url);
+    pPlayerSessionMgr = IFxPlayerSessionMgr::createPlaySessionMgr(callback);
+    pPlayerSessionMgr->init(url);
 }
 void FxPlayerWidget::initWindowsStyle() {
     // 设置窗口标题
@@ -47,7 +48,7 @@ void FxPlayerWidget::initWindowsStyle() {
 }
 
 QBoxLayout* FxPlayerWidget::createRootLayout() {
-    mVideoImageWidget = new QWidget();
+    mVideoImageWidget = new FxVideoWidget();
     QVBoxLayout *rootLayout = new QVBoxLayout(this);
     rootLayout->setContentsMargins(10, 0, 10, 0);
     mVideoImageWidget->setStyleSheet("background-color: #066781;");
@@ -252,6 +253,10 @@ QPushButton* FxPlayerWidget::createButton(QString iconName,  int width, int heig
     return button;
 }
 
+void FxPlayerWidget::initPlayer() {
+    // connect(m_readThread, &ReadThread::updateImage, ui->playImage, &PlayImage::updateImage, Qt::DirectConnection);
+    // connect(m_readThread, &ReadThread::playState, this, &Widget::on_playState);
+}
 //鼠标seek,需要从这个点开始播放: ratio *totalTime
 void FxPlayerWidget::handleSeekProgress(int ratio){
     // qDebug() << "handleSeekProgress" << ratio;
@@ -289,8 +294,9 @@ void FxPlayerWidget::onPlayStateChange(const MediaPlayState state) {
     qDebug() << "state:" << static_cast<int>(state);
 }
 
-void onDeliverAudioFrames(FxFrameQueuePtr audioFrameQueue) {
+void FxPlayerWidget::onDeliverAudioFrames(FxFrameQueuePtr audioFrameQueue) {
     qDebug() << "audioFrames.size:" << audioFrameQueue->size();
+    pAudioFrameQueue = audioFrameQueue;
 
     // while(audioFrameDataQueue->size() > 0) {
     //     if (auto frameData = audioFrameDataQueue->popDirectly()) {
@@ -299,8 +305,9 @@ void onDeliverAudioFrames(FxFrameQueuePtr audioFrameQueue) {
     // }
 }
 
-void onDeliverVideoFrames(FxFrameQueuePtr videoFrameQueue) {
-    qDebug() << " videoFrames.size:" << videoFrameQueue->size();
+void FxPlayerWidget::onDeliverVideoFrames(FxFrameQueuePtr videoFrameQueue) {
+    pVideoFrameQueue = videoFrameQueue;
+    // qDebug() << " videoFrames.size:" << videoFrameQueue->size();
 
     // while(videoFrameDataQueue->size() > 0) {
     //     if (auto frameData = videoFrameDataQueue->popDirectly()) {
@@ -308,18 +315,58 @@ void onDeliverVideoFrames(FxFrameQueuePtr videoFrameQueue) {
     //     }
     // }
 }
-// void showNextFrame() {
-//     // Check if there's a frame available in the queue
-//     if (!m_frameQueue->isEmpty()) {
-//         AVFrame *frame = m_frameQueue->pop();
-//         // Convert AVFrame to QImage (assuming RGB format)
-//         QImage image(frame->data[0], frame->width, frame->height, QImage::Format_RGB888);
-//         // Display the image on QLabel
-//         m_videoLabel->setPixmap(QPixmap::fromImage(image));
-//         // Release the frame
-//         av_frame_unref(frame);
-//     }
-// }
+//
+// connect(&m_timer, &QTimer::timeout, this, &VideoPlayer::showNextFrame);
+
+void FxPlayerWidget::showNextAudioFrame() {
+    // Check if there's a frame available in the queue
+    if (!pAudioFrameQueue->isEmpty()) {
+        AVFrame *frame = pAudioFrameQueue->pop();
+        // Convert AVFrame to QImage (assuming RGB format)
+        QImage image(frame->data[0], frame->width, frame->height, QImage::Format_RGB888);
+        // Display the image on QLabel
+        // m_videoLabel->setPixmap(QPixmap::fromImage(image));
+        // Release the frame
+        av_frame_unref(frame);
+    }
+}
+
+void FxPlayerWidget::showNextVideoFrame() {
+    // Check if there's a frame available in the queue
+    if (!pVideoFrameQueue->isEmpty()) {
+        AVFrame *frame = pVideoFrameQueue->pop();
+        // Convert AVFrame to QImage (assuming RGB format)
+        QImage image(frame->data[0], frame->width, frame->height, QImage::Format_RGB888);
+        // Display the image on QLabel
+        // m_videoLabel->setPixmap(QPixmap::fromImage(image));
+        // Release the frame
+        av_frame_unref(frame);
+    }
+}
+
+
+
+void FxPlayerWidget::start() {
+    mTimer->start(33); // 30 frames per second
+}
+
+void FxPlayerWidget::pause() {
+    mTimer->stop();
+}
+
+void FxPlayerWidget::stop() {
+    mTimer->stop();
+    // 清空帧队列
+    // while (!pVideoFrameQueue->isEmpty()) {
+    //     auto frame = pVideoFrameQueue->pop(10);
+    //     av_frame_free(frame);
+    // }
+}
+
+void FxPlayerWidget::seek(int positionMs) {
+    // 执行跳转操作
+    // 例如：av_seek_frame(...)
+}
 //#IFxPlayerSessionMgrCallback implement end
 
 FxPlayerWidget::~FxPlayerWidget() {}

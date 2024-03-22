@@ -18,7 +18,8 @@ SOURCES += \
     mediasession/FxPacketQueue.cpp \
     mediasession/FxPlayerSessionMgr.cpp \
     player/FxPlayerWidget.cpp \
-    player/FxProgressBar.cpp
+    player/FxProgressBar.cpp \
+    player/FxVideoWidget.cpp
 
 HEADERS += \
     IFxPlayerSessionMgr.h \
@@ -32,7 +33,8 @@ HEADERS += \
     mediasession/FxQueue.h \
     mediasession/IFxPlayerSessionMgr.h \
     player/FxPlayerWidget.h \
-    player/FxProgressBar.h
+    player/FxProgressBar.h \
+    player/FxVideoWidget.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

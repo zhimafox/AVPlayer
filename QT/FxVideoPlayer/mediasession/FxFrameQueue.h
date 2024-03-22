@@ -23,8 +23,9 @@ namespace fox
             void release();
             int size();
             int push(AVFrame *frame);
-            AVFrame *pop(const int timeout);
+            AVFrame *pop(const int timeout=10);
             AVFrame *front();
+            bool isEmpty();
 
         private:
             FxQueue<AVFrame *> mQueue;
